@@ -27,8 +27,24 @@ def llenar_lista(n, procesos):
 
 
 def llenar_compartido(n, procesos):
-    """TODO: el mismo reparto sobre memoria compartida. Reservar un
-    multiprocessing.Array de enteros de 64 bits ('q'), repartir los tramos
-    entre los procesos, y devolver el contenido como lista de Python.
+    """Llena memoria compartida repartiendo sus posiciones entre procesos.
+
+    Reserva un multiprocessing.Array de enteros de 64 bits ('q'), reparte
+    los tramos entre los procesos y devuelve el contenido como lista de Python.
     Cada proceso escribe posiciones distintas, así que no hace falta cerrojo."""
-    raise NotImplementedError
+    compartido = multiprocessing.Array("q", n, lock=False)
+    paso = n // procesos
+    hijos = []
+    for p in range(procesos):
+        ini, fin = p * paso, n if p == procesos - 1 else (p + 1) * paso
+        hijos.append(
+            multiprocessing.Process(
+                target=_llenar_tramo_lista,
+                args=(compartido, ini, fin),
+            )
+        )
+    for hijo in hijos:
+        hijo.start()
+    for hijo in hijos:
+        hijo.join()
+    return list(compartido)

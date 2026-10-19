@@ -3,6 +3,7 @@
 Cada función recibe la función a ejecutar y la lista de argumentos, y devuelve
 la lista de resultados en el mismo orden de los argumentos.
 """
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 
 def en_secuencia(funcion, argumentos):
@@ -11,17 +12,16 @@ def en_secuencia(funcion, argumentos):
 
 
 def con_hilos(funcion, argumentos):
-    """TODO: ejecutar con varios hilos, uno por argumento.
+    """Ejecuta las tareas con un grupo de hilos.
 
-    Sirven threading.Thread o concurrent.futures.ThreadPoolExecutor. El orden
-    de los resultados tiene que corresponder al de los argumentos.
+    ``map`` conserva el orden de los argumentos aunque las tareas terminen en
+    otro orden.
     """
-    raise NotImplementedError
+    with ThreadPoolExecutor() as ejecutor:
+        return list(ejecutor.map(funcion, argumentos))
 
 
 def con_procesos(funcion, argumentos):
-    """TODO: ejecutar con varios procesos, uno por argumento.
-
-    Sirven multiprocessing.Pool o concurrent.futures.ProcessPoolExecutor.
-    """
-    raise NotImplementedError
+    """Ejecuta las tareas en procesos y conserva el orden de los resultados."""
+    with ProcessPoolExecutor() as ejecutor:
+        return list(ejecutor.map(funcion, argumentos))
